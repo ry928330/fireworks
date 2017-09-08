@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>canvas firework demo</title>
+	<style type="text/css">
+		.backgroundCity {
+			position: fixed;
+			width: 100%;
+			bottom: 0;
+			z-index: 100;
+		}
+		.backgroundCity img {
+			width: 100%;
+		}
+		.moon {
+			width: 150px;
+			height: 150px;
+			position: fixed;
+			top: 100px;
+			right: 100px;
+			z-index: 100;
+			box-shadow: 5px 5px 5px #fff outset;
+		}
+		.moon img {
+			width: 100%;
+			height: 100%;
+		}
+		#animationTest {
+			z-index: 100;
+			position: fixed;
+			top: 0;
+			left: 100;
+			width: 100;
+			height: 100;
+		}
+		canvas {
+			background-color:rgba(0,5,24,1);
+		}
+	</style>
+</head>
+<body>
+	<canvas id="canvas"  width="1920" height="950">浏览器不支持canvas</canvas>
+	<div class="backgroundCity">
+		<img src="./imgs/city.png">
+	</div>
+	<div class="moon">
+		<img  src="./imgs/moon.png">
+	</div>
+	<button id="animationTest">点我测试</button>
+	<script type="text/javascript" src="./fireworks.js"></script>
+</body>
+</html>
