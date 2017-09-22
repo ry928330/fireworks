@@ -26,6 +26,7 @@ window.onload = function() {
 		this.offsetValueX = offsetValueX;
 		this.offsetValueY = offsetValueY;
 		this.disappear = false;
+		this.boomJudge = true;
 		this.draw = function() {
 			ctx.save();
 			ctx.beginPath();
@@ -36,22 +37,22 @@ window.onload = function() {
 			ctx.restore();
 		}
 		this.move = function() {
-			//console.log(this.offsetValueX, this.offsetValueY)
 			this.x += this.vx + this.offsetValueX;
 			this.y -= this.vy + this.offsetValueY;
 		}
 		//烟花爆炸，产生碎片
 		this.boom = function() {
-			var scope = getRandom(200, 300);
+			var scope = Math.round(getRandom(10, 40));
+			//var scope = 1;
 			for (var i=0; i<scope; i++) {
-				var angel = Math.PI/180 * getRandom(0, 2*Math.PI);
-				var targetX = this.x + scope*Math.cos(angel);
-				var targetY = this.y + scope*Math.sin(angel);
+				var angel = getRandom(0, 2*Math.PI);
+				var range = Math.round(getRandom(50, 300));
+				var targetX = this.x + range*Math.cos(angel);
+				var targetY = this.y + range*Math.sin(angel);
 				var r = Math.round(getRandom(120, 255));
 				var g = Math.round(getRandom(120, 255));
 				var b = Math.round(getRandom(120, 255));
 				var color = 'rgb(' + r + ',' + g + ',' + b + ')';
-				//console.log(this.x, this.y)
 				var frag = new CreateFrag(this.x, this.y, color, targetX, targetY);
 				this.fragArr.push(frag);
 			}
@@ -71,20 +72,15 @@ window.onload = function() {
 			ctx.fillStyle = that.color;
 			ctx.fillRect(that.x, that.y, 2, 2);
 			ctx.restore();
-			// console.log('fragDraw1')
 		}
 		that.move = function() {
-			//console.log(that.x, that.y, that.tx, that.ty)
+			that.ty = that.ty + 0.5;
 			var dx = that.tx - that.x, dy = that.ty - that.y;
-			that.x = Math.abs(dx) < 0.1 ? that.tx : (that.x + dx*0.1);
-			that.y = Math.abs(dy) < 0.1 ? that.ty : (that.y + dy*0.1);
-			// console.log(dx,dy)
-			//console.log(that.x, that.y)
-			if (dx == 0 || dy == 0) {
-				that.disappear = true; 
-				console.log(1111111111111)
+			that.x = Math.abs(dx) < 0.1 ? that.tx : (that.x + dx*0.01);
+			that.y = Math.abs(dy) < 0.1 ? that.ty : (that.y + dy*0.01);
+			if (dx == 0 || dy == 0 || that.y >= 700 || that.x <= 300 || that.x >= 1700) {
+				that.fragDisappear = true;
 			}
-			// console.log('fragDraw2')
 		}
 	}
 	function createRandomFire(func) {
@@ -112,17 +108,28 @@ window.onload = function() {
 					item.move();
 				} else {
 					var removeFire = fireArr.splice(index, 1);
-					//console.log(removeFire[0].x, removeFire[0].y)
-					removeFire[0].boom();
-					//console.log(removeFire[0].fragArr.length)
-					removeFire[0].fragArr.forEach(function(item, index) {
-						
-						item.draw();
-						item.move();
-					})
+					fragments.push(removeFire);
+					if (fragments.length) {
+						fragments.forEach(function(item, index) {
+							if (item[0].boomJudge) {
+								item[0].boom();
+								item[0].boomJudge = false;
+							}
+						})
+					}
 					fireArr.push(createRandomFire(CreateFireObj));
 				}
-				
+			})
+		}
+		if (fragments.length) {
+			fragments.forEach(function(item1, index1) {
+				item1[0].fragArr.forEach(function(item2, index2) {
+					if (item2.fragDisappear) {
+						fragments.splice(index1, 1);
+					}
+					item2.draw();
+					item2.move();
+				})
 			})
 		}
 		animation = window.requestAnimationFrame(animate);
@@ -133,34 +140,9 @@ window.onload = function() {
 
 }
 
-	// var fireArr = [];
-	// setInterval(function(){
-	// 	var r = Math.round(getRandom(200, 255));
-	// 	var g = Math.round(getRandom(200, 255));
-	// 	var b = Math.round(getRandom(0, 255));
-	// 	var color = 'rgb(' + r + ',' + g + ',' + b + ')';
-
-	// 	fireArr[fireArr.length] = new CreateFireObj(960 + getRandom(-300, 300), 800, color, getRandom(-5, 5), getRandom(0, 3));
-	// }, 3000)                                                
-
-	// 作圆周运动轨迹
-	// function animate() {
-	// 	console.log(arguments[0])
-	// 	ctx.fillStyle = 'rgba(0,0,0,0.1)'; //产生拖尾效果
-	// 	ctx.fillRect(0, 0, canvas.width, canvas.height);
-		
-	// 	fire.draw();
-	// 	fire.x = fire.trackRadius * Math.cos(Math.PI/180 * fire.angel) + fire.trackRadius + fire.initialX;
-	// 	fire.y = fire.trackRadius * Math.sin(Math.PI/180 * fire.angel) + fire.initialY;
-	// 	fire.angel += 2;
-	// 	animation = window.requestAnimationFrame(animate);
-
-	// }
-	//animate();
 	function move() {
 		ctx.fillStyle = 'rgba(0,0,0,0.1)';
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
-		//ctx.clearRect(0, 0, canvas.width, canvas.height);
 		fire.draw();
 		fire.x = fire.trackRadius * Math.cos(Math.PI/180 * fire.angel) + fire.trackRadius + 960;
 		fire.y = fire.trackRadius * Math.sin(Math.PI/180 * fire.angel) + 700;
